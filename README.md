@@ -1,5 +1,5 @@
 # 💫 About Me:
-🔭 I’m currently working on web development.<br>🤝 I’m looking for help with DevOps.<br>🌱 I’m currently learning DSA.<br>💬 Ask me about anything.
+🔭 I’m currently working on web development.<br>🤝 I’m looking for .<br>🌱 I’m currently learning laravel.<br>💬 Ask me anything.
 
 
 # 💻 Tech Stack:
