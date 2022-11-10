@@ -1,5 +1,5 @@
 # 💫 About Me:
-🔭 I’m currently working on web development.<br>🤝 I’m looking for .<br>🌱 I’m currently learning laravel.<br>💬 Ask me anything.
+🔭 I’m currently working on web development.<br>🤝 I’m looking for laravel projects .<br>🌱 I’m currently learning laravel.<br>💬 Ask me anything.
 
 
 # 💻 Tech Stack:
