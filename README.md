@@ -1,5 +1,5 @@
 # 💫 About Me:
-I'm a dedicated web developer with over 3 years of experience as a Laravel Developer. Currently, I'm expanding my skill set with the **MERN stack** (React, Express, Node.js) and **DevOps** practices, including CI/CD and Docker. I'm open to opportunities and eager to contribute to impactful projects.
+I'm a dedicated web developer with over 3 years of experience as a Laravel Developer. Currently, I'm expanding my skill set with the **Laravel** and **DevOps** practices, including CI/CD and Docker. I'm open to opportunities and eager to contribute to impactful projects.
 
 ---
 
