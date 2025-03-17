@@ -19,7 +19,7 @@ I'm a dedicated web developer with over 3 years of experience as a Laravel Devel
   <br/>
   <img src="https://github-readme-streak-stats.herokuapp.com/?user=kamran-code&theme=dark&hide_border=false" alt="GitHub Streak"/>
   <br/>
-
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=kamran-code&theme=dark&hide_border=false&include_all_commits=false&count_private=false&layout=compact" alt="Top Languages"/>
 </div>
 
 ---
