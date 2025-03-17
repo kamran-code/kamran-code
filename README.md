@@ -8,11 +8,8 @@ I'm a dedicated web developer with over 3 years of experience as a Laravel Devel
 ![Laravel](https://img.shields.io/badge/Laravel-%23FF2D20.svg?style=for-the-badge&logo=laravel&logoColor=white)  
 ![MySQL](https://img.shields.io/badge/MySQL-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)  
 ![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)  
-![Express](https://img.shields.io/badge/Express-%23000000.svg?style=for-the-badge&logo=express&logoColor=white)  
-![Node.js](https://img.shields.io/badge/Node.js-%2343853D.svg?style=for-the-badge&logo=node.js&logoColor=white)  
-![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)  
-![Sequelize](https://img.shields.io/badge/Sequelize-%23000000.svg?style=for-the-badge&logo=sequelize&logoColor=white)  
-![Mongoose](https://img.shields.io/badge/Mongoose-%23000000.svg?style=for-the-badge&logo=mongoose&logoColor=white) 
+
+
 
 ---
 
