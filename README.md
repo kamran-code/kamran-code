@@ -1,27 +1,57 @@
-# 💫 About Me:
-I'm a dedicated web developer with over 3 years of experience as a Laravel Developer. Currently, I'm expanding my skill set with the **Laravel** and **DevOps** practices, including CI/CD and Docker. I'm open to opportunities and eager to contribute to impactful projects.
+# 💫 About Me
+
+I'm a **Remote Software Engineer & AI Application Engineer** building intelligent, scalable digital products across web and mobile platforms.
+
+With a strong foundation in backend engineering and modern full-stack development, I specialize in integrating **AI into real-world applications** — from smart automation to conversational systems and data-driven platforms.
+
+I actively work with **LLM-powered architectures**, building production-ready AI solutions using model orchestration, RAG pipelines, and vector databases.
+
+I’m passionate about solving complex problems, shipping impactful products, and exploring the cutting edge of applied AI.
 
 ---
 
-# 💻 Tech Stack:
-![PHP](https://img.shields.io/badge/PHP-%23778C1F.svg?style=for-the-badge&logo=php&logoColor=white)  
-![Laravel](https://img.shields.io/badge/Laravel-%23FF2D20.svg?style=for-the-badge&logo=laravel&logoColor=white)  
-![MySQL](https://img.shields.io/badge/MySQL-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)  
-![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)  
+# 🚀 What I Work On
 
-
-
----
-
-# 📊 GitHub Stats:
-<div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=kamran-code&theme=dark&hide_border=false&include_all_commits=false&count_private=false" alt="GitHub Stats"/>
-  <br/>
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=kamran-code&theme=dark&hide_border=false" alt="GitHub Streak"/>
-  <br/>
-    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=kamran-code&theme=dark&hide_border=false&include_all_commits=false&count_private=false&layout=compact" alt="Top Languages"/>
-</div>
+* AI-powered web & mobile applications
+* LLM integrations and agent workflows
+* Retrieval-Augmented Generation (RAG) systems
+* Chatbots using vector databases
+* Scalable backend APIs and microservices
+* DevOps, automation, and cloud deployments
 
 ---
 
+# 💻 Tech Stack
 
+### 👨‍💻 Backend & APIs
+
+PHP • Laravel • Node.js • Express • NestJS • FastAPI • Moodle
+
+### 🌐 Frontend
+
+React • Next.js
+
+### 🗄 Databases & Infrastructure
+
+MySQL • Vector Databases • Docker • CI/CD
+
+### 🤖 AI Engineering
+
+LLM Integration • RAG Pipelines • Model Orchestration • AI Automation
+
+### 🧠 AI Tools & Platforms
+
+Claude • Code Generation Tools • AI Dev Assistants • Model Interaction Frameworks
+
+---
+
+
+# 🌱 Currently Exploring
+
+AI Agents • Advanced RAG Architectures • Scalable AI Systems • Applied LLM Engineering
+
+---
+
+# 🤝 Open to
+
+Remote opportunities • AI product development • Innovative collaborations • Impact-driven projects
