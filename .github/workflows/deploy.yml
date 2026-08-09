@@ -55,11 +55,22 @@ jobs:
           if [ -d public ]; then cp -r public .next/standalone/public; fi
 
       - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          SSH_PORT: ${{ secrets.VPS_PORT || '22' }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          # Accept the key as either a raw PEM block or (preferred, paste-safe on
+          # mobile) single-line base64. OpenSSH keys corrupt easily when pasted,
+          # so base64 avoids newline/whitespace mangling.
+          if printf '%s' "$VPS_SSH_KEY" | grep -q "BEGIN"; then
+            printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_deploy
+          else
+            printf '%s' "$VPS_SSH_KEY" | tr -d '[:space:]' | base64 -d > ~/.ssh/id_deploy
+          fi
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -p "${{ secrets.VPS_PORT || '22' }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "$SSH_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Deploy to VPS
         env:
