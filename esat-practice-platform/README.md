@@ -73,6 +73,63 @@ src/
   swap `src/lib/store.ts` for a database to deploy to a serverless/multi-instance
   environment.
 
+## Generating content without a server API key
+
+Generation happens **offline**, where an API key already lives (your machine, CI,
+or an assistant), and the results are committed to `src/data/generated.json`.
+Your CI/CD then ships them to the server, which serves static content and needs
+**no Anthropic key**.
+
+```
+generate (with key)  →  src/data/generated.json  →  git push  →  CI deploy  →  server (no key)
+```
+
+Generate a batch locally:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... npm run generate -- \
+  --section physics --topic "Electricity and circuits" --difficulty medium --count 5
+
+# preview without writing:
+ANTHROPIC_API_KEY=sk-ant-... npm run generate -- --section biology --count 3 --dry-run
+```
+
+Then commit and push:
+
+```bash
+git add src/data/generated.json && git commit -m "Add generated physics questions" && git push
+```
+
+The push triggers the deploy workflow, which ships the updated bank to the VPS.
+Content can also simply be hand-authored (or authored by an assistant) directly
+in `src/data/generated.json` — same shape, same pipeline, zero API usage.
+
+**Content sources** (all merged by `src/lib/store.ts`, in priority order):
+1. `src/data/generated.json` — committed, shipped via git/CI (the offline pipeline).
+2. `data/generated.json` — optional runtime file written by the on-server
+   `/api/generate` flow **only if** the server has an API key. Not needed in production.
+3. `src/data/questions.json` — bundled seed content.
+
+With this pipeline you can remove `ANTHROPIC_API_KEY` from the server entirely;
+the AI Generator page/endpoint just returns a 503 if used there, which is fine.
+
+### Live push via the Claude skill (no redeploy)
+
+There's also a packaged Claude skill at
+[`.claude/skills/esat-content-generator/`](../../.claude/skills/esat-content-generator/SKILL.md)
+(repo root). It knows the exact schema, authors questions with no API key, and
+can **push straight to the running app** via an authenticated endpoint:
+
+```
+POST /api/questions/import
+Authorization: Bearer <INGEST_TOKEN>
+{ "questions": [ ...Question ] }
+```
+
+Pushed content is stored in `ESAT_DATA_DIR` (persistent, outside the app dir) and
+served immediately — no deploy. See `deploy/README.md` → **Content ingest** for
+server setup (`INGEST_TOKEN`, `ESAT_DATA_DIR`) and the skill's `push.mjs`.
+
 ## Deployment (Hostinger VPS via GitHub Actions)
 
 Push-to-deploy is configured in `.github/workflows/deploy.yml`: pushes to `main`

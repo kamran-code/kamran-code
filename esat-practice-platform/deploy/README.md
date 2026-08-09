@@ -162,6 +162,47 @@ In the repo: **Settings → Secrets and variables → Actions → New repository
 
 ---
 
+## Content ingest (push questions to the live app)
+
+The app exposes an authenticated endpoint so generated content can be pushed
+without a redeploy:
+
+```
+POST /api/questions/import
+Authorization: Bearer <INGEST_TOKEN>
+{ "questions": [ { section, topic, difficulty, question, options, correctIndex, explanation }, ... ] }
+```
+
+`bootstrap.sh` sets this up automatically: it generates an `INGEST_TOKEN`,
+writes it (and `ESAT_DATA_DIR=/var/lib/esat-prep`) to `/etc/esat-prep/env`, and
+creates the persistent data dir. Pushed content lands in `$ESAT_DATA_DIR`, which
+is **outside** the app dir so it survives `rsync --delete` on deploy.
+
+**Already set up your server before this feature?** Patch it once:
+
+```bash
+# generate a token and record it
+TOKEN=$(openssl rand -hex 32); echo "INGEST_TOKEN=$TOKEN"
+# persistent data dir, owned by the deploy user
+mkdir -p /var/lib/esat-prep && chown deploy:deploy /var/lib/esat-prep
+# add both to the env file
+printf 'INGEST_TOKEN=%s\nESAT_DATA_DIR=/var/lib/esat-prep\n' "$TOKEN" >> /etc/esat-prep/env
+systemctl restart esat-prep
+```
+
+Then use the token locally with the skill's push script:
+
+```bash
+export ESAT_INGEST_TOKEN=<the token>
+export ESAT_API_URL=http://76.13.240.125
+node .claude/skills/esat-content-generator/push.mjs /tmp/esat-batch.json
+```
+
+Security: the endpoint requires the bearer token; without `INGEST_TOKEN` set, all
+write endpoints return 503 in production. Keep the token secret — it authorizes
+writes to your question bank. Rotate it by changing `/etc/esat-prep/env` and
+restarting the service.
+
 ## Verify & troubleshoot
 
 ```bash

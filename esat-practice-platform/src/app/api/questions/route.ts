@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getQuestions, saveQuestions } from "@/lib/store";
+import { checkWriteAuth } from "@/lib/ingest";
 import type { GeneratedQuestion, Question } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -19,6 +20,11 @@ export async function GET(request: Request) {
 
 // Persist a batch of AI-generated questions into the store.
 export async function POST(request: Request) {
+  const auth = checkWriteAuth(request);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   let body: { section?: string; questions?: GeneratedQuestion[] };
   try {
     body = await request.json();
