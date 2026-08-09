@@ -1,0 +1,36 @@
+# systemd unit for the ESAT Practice Platform (Next.js standalone server).
+# Install to /etc/systemd/system/esat-prep.service on the VPS.
+#
+# Adjust User, WorkingDirectory, and the node path to match your server.
+# WorkingDirectory must equal the VPS_APP_DIR secret used by the workflow.
+
+[Unit]
+Description=ESAT Practice Platform (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/esat-prep
+
+# App runtime environment.
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+# Secrets (ANTHROPIC_API_KEY, optional ANTHROPIC_MODEL) live in this file,
+# created once during setup — see deploy/README.md.
+EnvironmentFile=/etc/esat-prep/env
+
+# Use the absolute path to node. Find it with: which node
+ExecStart=/usr/bin/node server.js
+
+Restart=on-failure
+RestartSec=3
+
+# Basic hardening.
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

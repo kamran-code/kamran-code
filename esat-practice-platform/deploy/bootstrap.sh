@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+#
+# One-time VPS setup for the ESAT Practice Platform.
+# Run this ONCE on the VPS as root (Hostinger hPanel → VPS → Browser terminal,
+# or `ssh root@YOUR_VPS_IP`). It is self-contained — no repo checkout needed.
+#
+# It installs Node + Nginx, creates a deploy user, authorizes the CI SSH key,
+# stores the Anthropic API key, and installs the systemd service, sudoers rule,
+# and Nginx reverse proxy. No secrets are baked into this file — the public key
+# and API key are read at runtime (prompted, or supplied via env vars).
+#
+# Non-interactive example:
+#   DOMAIN=esat.example.com \
+#   DEPLOY_PUBKEY="ssh-ed25519 AAAA... github-actions-esat" \
+#   ANTHROPIC_API_KEY="sk-ant-..." \
+#   bash bootstrap.sh
+#
+set -euo pipefail
+
+# ---- Config (override via env) ------------------------------------------------
+APP_DIR="${APP_DIR:-/var/www/esat-prep}"
+DEPLOY_USER="${DEPLOY_USER:-deploy}"
+SERVICE="${SERVICE:-esat-prep}"
+DOMAIN="${DOMAIN:-}"            # e.g. esat.example.com; empty = serve on the IP
+EMAIL="${EMAIL:-}"             # set to auto-run certbot for DOMAIN
+NODE_MAJOR="${NODE_MAJOR:-20}"
+ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-5}"
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Please run as root (e.g. sudo bash bootstrap.sh)." >&2
+  exit 1
+fi
+
+# ---- Gather secrets (prompt if not provided) ---------------------------------
+if [ -z "${DEPLOY_PUBKEY:-}" ]; then
+  echo "Paste the deploy PUBLIC key (contents of esat-deploy.pub), then press Enter:"
+  read -r DEPLOY_PUBKEY
+fi
+if [ -z "${DEPLOY_PUBKEY:-}" ]; then
+  echo "No public key provided — aborting." >&2
+  exit 1
+fi
+
+if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+  read -rsp "Paste your ANTHROPIC_API_KEY (input hidden, Enter to skip for now): " ANTHROPIC_API_KEY
+  echo
+fi
+
+# ---- Install packages --------------------------------------------------------
+echo "==> Installing Node ${NODE_MAJOR}, Nginx, rsync..."
+curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
+DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs nginx rsync
+NODE_BIN="$(command -v node)"
+SYSTEMCTL_BIN="$(command -v systemctl)"
+echo "    node: $NODE_BIN ($(node -v))"
+
+# ---- Deploy user + app dir ---------------------------------------------------
+echo "==> Creating deploy user '$DEPLOY_USER' and $APP_DIR..."
+id -u "$DEPLOY_USER" >/dev/null 2>&1 || adduser --disabled-password --gecos "" "$DEPLOY_USER"
+mkdir -p "$APP_DIR"
+chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
+
+# ---- Authorize the CI SSH key ------------------------------------------------
+echo "==> Authorizing deploy SSH key..."
+install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "/home/$DEPLOY_USER/.ssh"
+AUTH="/home/$DEPLOY_USER/.ssh/authorized_keys"
+touch "$AUTH"
+grep -qxF "$DEPLOY_PUBKEY" "$AUTH" || echo "$DEPLOY_PUBKEY" >> "$AUTH"
+chown "$DEPLOY_USER:$DEPLOY_USER" "$AUTH"
+chmod 600 "$AUTH"
+
+# ---- App environment file ----------------------------------------------------
+echo "==> Writing /etc/esat-prep/env..."
+mkdir -p /etc/esat-prep
+cat >/etc/esat-prep/env <<EOF
+ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+EOF
+chmod 640 /etc/esat-prep/env
+chown root:"$DEPLOY_USER" /etc/esat-prep/env
+[ -z "${ANTHROPIC_API_KEY:-}" ] && echo "    (!) API key left blank — set it later in /etc/esat-prep/env, then restart the service."
+
+# ---- systemd service ---------------------------------------------------------
+echo "==> Installing systemd service '$SERVICE'..."
+cat >"/etc/systemd/system/${SERVICE}.service" <<EOF
+[Unit]
+Description=ESAT Practice Platform (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=$DEPLOY_USER
+WorkingDirectory=$APP_DIR
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+EnvironmentFile=/etc/esat-prep/env
+ExecStart=$NODE_BIN server.js
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+"$SYSTEMCTL_BIN" daemon-reload
+"$SYSTEMCTL_BIN" enable "$SERVICE"
+echo "    (service will start on the first deploy, once server.js is shipped)"
+
+# ---- Passwordless restart for the deploy user --------------------------------
+echo "==> Adding narrow sudoers rule..."
+echo "$DEPLOY_USER ALL=(root) NOPASSWD: $SYSTEMCTL_BIN restart $SERVICE" \
+  > "/etc/sudoers.d/${SERVICE}-deploy"
+chmod 440 "/etc/sudoers.d/${SERVICE}-deploy"
+visudo -cf "/etc/sudoers.d/${SERVICE}-deploy"
+
+# ---- Nginx reverse proxy -----------------------------------------------------
+echo "==> Configuring Nginx..."
+SERVER_NAME="${DOMAIN:-_}"
+cat >"/etc/nginx/sites-available/${SERVICE}" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${SERVER_NAME};
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_read_timeout 120s;
+    }
+}
+EOF
+ln -sf "/etc/nginx/sites-available/${SERVICE}" "/etc/nginx/sites-enabled/${SERVICE}"
+rm -f /etc/nginx/sites-enabled/default
+# Validate config, then ensure nginx is enabled and running. `restart` works
+# whether or not nginx was already started (a plain `reload` fails on a fresh
+# box where the service isn't active yet).
+nginx -t
+"$SYSTEMCTL_BIN" enable nginx
+"$SYSTEMCTL_BIN" restart nginx
+
+# ---- Optional HTTPS ----------------------------------------------------------
+if [ -n "$DOMAIN" ] && [ -n "$EMAIL" ]; then
+  echo "==> Requesting Let's Encrypt certificate for $DOMAIN..."
+  DEBIAN_FRONTEND=noninteractive apt-get install -y certbot python3-certbot-nginx
+  certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" \
+    || echo "    (!) certbot failed — check DNS points at this server, then re-run."
+elif [ -n "$DOMAIN" ]; then
+  echo "    To enable HTTPS later: sudo apt-get install -y certbot python3-certbot-nginx && sudo certbot --nginx -d $DOMAIN"
+fi
+
+echo
+echo "==> Server setup complete."
+echo "    Next: add the GitHub secrets and push to main to trigger the first deploy."
+echo "    VPS_APP_DIR must be: $APP_DIR"
