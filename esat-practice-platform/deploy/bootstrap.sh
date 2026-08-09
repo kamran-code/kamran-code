@@ -141,7 +141,12 @@ server {
 EOF
 ln -sf "/etc/nginx/sites-available/${SERVICE}" "/etc/nginx/sites-enabled/${SERVICE}"
 rm -f /etc/nginx/sites-enabled/default
-nginx -t && "$SYSTEMCTL_BIN" reload nginx
+# Validate config, then ensure nginx is enabled and running. `restart` works
+# whether or not nginx was already started (a plain `reload` fails on a fresh
+# box where the service isn't active yet).
+nginx -t
+"$SYSTEMCTL_BIN" enable nginx
+"$SYSTEMCTL_BIN" restart nginx
 
 # ---- Optional HTTPS ----------------------------------------------------------
 if [ -n "$DOMAIN" ] && [ -n "$EMAIL" ]; then
