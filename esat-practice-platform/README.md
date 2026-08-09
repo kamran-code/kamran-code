@@ -73,6 +73,16 @@ src/
   swap `src/lib/store.ts` for a database to deploy to a serverless/multi-instance
   environment.
 
+## Deployment (Hostinger VPS via GitHub Actions)
+
+Push-to-deploy is configured in `.github/workflows/deploy.yml`: pushes to `main`
+build the app on a GitHub runner and ship the standalone bundle to the VPS over
+SSH, then restart a systemd service behind an Nginx reverse proxy.
+
+See **[`deploy/README.md`](./deploy/README.md)** for the full one-time server
+setup, the list of GitHub secrets to add, and troubleshooting. Server-side
+templates live in `deploy/` (`esat-prep.service`, `nginx.conf`).
+
 ## Notes
 
 - Question generation uses the Anthropic Messages API with **structured outputs**

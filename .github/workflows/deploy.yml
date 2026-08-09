@@ -1,0 +1,87 @@
+name: Deploy ESAT Practice Platform
+
+# Builds the Next.js app on the GitHub runner and ships the self-contained
+# standalone bundle to the Hostinger VPS over SSH, then restarts the service.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST      IP address or hostname of the VPS
+#   VPS_USER      SSH user (e.g. "deploy")
+#   VPS_SSH_KEY   private SSH key (full PEM/OpenSSH text) authorized on the VPS
+#   VPS_APP_DIR   absolute deploy path on the VPS (e.g. /var/www/esat-prep)
+#   VPS_PORT      SSH port (optional — defaults to 22)
+#
+# The ANTHROPIC_API_KEY lives on the server (see deploy/README.md), not here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "esat-practice-platform/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
+
+# Never run two deploys at once; cancel an in-flight one if a newer push lands.
+concurrency:
+  group: deploy-esat
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esat-practice-platform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: esat-practice-platform/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Assemble standalone bundle
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          if [ -d public ]; then cp -r public .next/standalone/public; fi
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "${{ secrets.VPS_PORT || '22' }}" -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to VPS
+        env:
+          SSH_PORT: ${{ secrets.VPS_PORT || '22' }}
+          TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+          APP_DIR: ${{ secrets.VPS_APP_DIR }}
+        run: |
+          # Ensure the deploy directory exists.
+          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" "mkdir -p '$APP_DIR'"
+          # Sync the standalone bundle (server.js, node_modules, .next, static, public).
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" \
+            .next/standalone/ "$TARGET:$APP_DIR/"
+
+      - name: Restart service & health check
+        env:
+          SSH_PORT: ${{ secrets.VPS_PORT || '22' }}
+          TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" \
+            "sudo systemctl restart esat-prep && sleep 3 && systemctl is-active esat-prep"
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
