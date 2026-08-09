@@ -17,9 +17,25 @@
 //   list   [--section .. --difficulty .. --search .. --source ..]
 //
 import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const API = (process.env.ESAT_API_URL || "https://sourceopen.in").replace(/\/+$/, "");
-const TOKEN = process.env.ESAT_INGEST_TOKEN;
+// Credentials resolve from (1) environment, then (2) a git-ignored
+// secrets.local.json next to this script: { "ESAT_INGEST_TOKEN": "...",
+// "ESAT_API_URL": "https://sourceopen.in" }. The token is NEVER committed.
+const SKILL_DIR = path.dirname(fileURLToPath(import.meta.url));
+function localSecrets() {
+  try {
+    return JSON.parse(readFileSync(path.join(SKILL_DIR, "secrets.local.json"), "utf8"));
+  } catch {
+    return {};
+  }
+}
+const LOCAL = localSecrets();
+
+const API = (process.env.ESAT_API_URL || LOCAL.ESAT_API_URL || "https://sourceopen.in").replace(/\/+$/, "");
+const TOKEN = process.env.ESAT_INGEST_TOKEN || LOCAL.ESAT_INGEST_TOKEN;
 
 function flag(name) {
   const i = process.argv.indexOf(`--${name}`);
