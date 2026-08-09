@@ -113,6 +113,23 @@ in `src/data/generated.json` — same shape, same pipeline, zero API usage.
 With this pipeline you can remove `ANTHROPIC_API_KEY` from the server entirely;
 the AI Generator page/endpoint just returns a 503 if used there, which is fine.
 
+### Live push via the Claude skill (no redeploy)
+
+There's also a packaged Claude skill at
+[`.claude/skills/esat-content-generator/`](../../.claude/skills/esat-content-generator/SKILL.md)
+(repo root). It knows the exact schema, authors questions with no API key, and
+can **push straight to the running app** via an authenticated endpoint:
+
+```
+POST /api/questions/import
+Authorization: Bearer <INGEST_TOKEN>
+{ "questions": [ ...Question ] }
+```
+
+Pushed content is stored in `ESAT_DATA_DIR` (persistent, outside the app dir) and
+served immediately — no deploy. See `deploy/README.md` → **Content ingest** for
+server setup (`INGEST_TOKEN`, `ESAT_DATA_DIR`) and the skill's `push.mjs`.
+
 ## Deployment (Hostinger VPS via GitHub Actions)
 
 Push-to-deploy is configured in `.github/workflows/deploy.yml`: pushes to `main`

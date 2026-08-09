@@ -19,6 +19,7 @@ set -euo pipefail
 
 # ---- Config (override via env) ------------------------------------------------
 APP_DIR="${APP_DIR:-/var/www/esat-prep}"
+DATA_DIR="${DATA_DIR:-/var/lib/esat-prep}"   # persistent, OUTSIDE app dir (survives deploys)
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 SERVICE="${SERVICE:-esat-prep}"
 DOMAIN="${DOMAIN:-}"            # e.g. esat.example.com; empty = serve on the IP
@@ -42,8 +43,14 @@ if [ -z "${DEPLOY_PUBKEY:-}" ]; then
 fi
 
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  read -rsp "Paste your ANTHROPIC_API_KEY (input hidden, Enter to skip for now): " ANTHROPIC_API_KEY
+  read -rsp "Paste your ANTHROPIC_API_KEY (optional — Enter to skip; generation is done offline): " ANTHROPIC_API_KEY
   echo
+fi
+
+# Ingest token authorizes content pushed to /api/questions/import. Auto-generate
+# one if not supplied.
+if [ -z "${INGEST_TOKEN:-}" ]; then
+  INGEST_TOKEN="$(openssl rand -hex 32 2>/dev/null || head -c 48 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 48)"
 fi
 
 # ---- Install packages --------------------------------------------------------
@@ -55,10 +62,10 @@ SYSTEMCTL_BIN="$(command -v systemctl)"
 echo "    node: $NODE_BIN ($(node -v))"
 
 # ---- Deploy user + app dir ---------------------------------------------------
-echo "==> Creating deploy user '$DEPLOY_USER' and $APP_DIR..."
+echo "==> Creating deploy user '$DEPLOY_USER', $APP_DIR, and $DATA_DIR..."
 id -u "$DEPLOY_USER" >/dev/null 2>&1 || adduser --disabled-password --gecos "" "$DEPLOY_USER"
-mkdir -p "$APP_DIR"
-chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR"
+mkdir -p "$APP_DIR" "$DATA_DIR"
+chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_DIR" "$DATA_DIR"
 
 # ---- Authorize the CI SSH key ------------------------------------------------
 echo "==> Authorizing deploy SSH key..."
@@ -75,10 +82,12 @@ mkdir -p /etc/esat-prep
 cat >/etc/esat-prep/env <<EOF
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
 ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+ESAT_DATA_DIR=${DATA_DIR}
+INGEST_TOKEN=${INGEST_TOKEN}
 EOF
 chmod 640 /etc/esat-prep/env
 chown root:"$DEPLOY_USER" /etc/esat-prep/env
-[ -z "${ANTHROPIC_API_KEY:-}" ] && echo "    (!) API key left blank — set it later in /etc/esat-prep/env, then restart the service."
+[ -z "${ANTHROPIC_API_KEY:-}" ] && echo "    (i) API key left blank — fine; generation is done offline via the skill/script."
 
 # ---- systemd service ---------------------------------------------------------
 echo "==> Installing systemd service '$SERVICE'..."
@@ -162,3 +171,8 @@ echo
 echo "==> Server setup complete."
 echo "    Next: add the GitHub secrets and push to main to trigger the first deploy."
 echo "    VPS_APP_DIR must be: $APP_DIR"
+echo
+echo "    Content ingest is enabled. To push questions from the skill, set locally:"
+echo "      export ESAT_INGEST_TOKEN=$INGEST_TOKEN"
+echo "      export ESAT_API_URL=http://<your-ip-or-domain>"
+echo "    (Keep this token secret — it authorizes writes to your question bank.)"

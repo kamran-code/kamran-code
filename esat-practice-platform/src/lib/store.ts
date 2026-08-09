@@ -13,7 +13,10 @@ import type { Question } from "./types";
 //      dev restart; not required in production.
 //   3. bundled seed content (src/data/questions.json).
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Runtime data location. In production set ESAT_DATA_DIR to a path OUTSIDE the
+// app dir (e.g. /var/lib/esat-prep) so pushed content survives deploys, which
+// rsync --delete the app dir.
+const DATA_DIR = process.env.ESAT_DATA_DIR || path.join(process.cwd(), "data");
 const GENERATED_FILE = path.join(DATA_DIR, "generated.json");
 
 const seedQuestions = seed as Question[];
