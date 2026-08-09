@@ -1,19 +1,23 @@
 import { SECTIONS } from "./esat";
+import { isAdminRequest } from "./auth";
 import type { Question } from "./types";
 
 const VALID_SECTIONS = new Set<string>(SECTIONS.map((s) => s.id));
 const VALID_DIFFICULTY = new Set(["easy", "medium", "hard"]);
 
 /**
- * Authorize a write request.
- * - If INGEST_TOKEN is set, require a matching `Authorization: Bearer <token>`
- *   (or `x-ingest-token`) header.
- * - If INGEST_TOKEN is not set, allow writes in dev but block them in production
- *   (so a misconfigured prod server is never an open writer).
+ * Authorize a write request. Two accepted credentials:
+ * - the skill / API clients send `Authorization: Bearer <INGEST_TOKEN>`
+ *   (or `x-ingest-token`);
+ * - the dashboard UI sends a valid admin session cookie.
+ * If neither `INGEST_TOKEN` nor the dashboard password is configured, writes are
+ * allowed in dev but blocked in production (never an open writer).
  */
 export function checkWriteAuth(
   request: Request,
 ): { ok: true } | { ok: false; status: number; error: string } {
+  if (isAdminRequest(request)) return { ok: true };
+
   const token = process.env.INGEST_TOKEN;
   if (token) {
     const header = request.headers.get("authorization") || "";
@@ -29,7 +33,7 @@ export function checkWriteAuth(
     return {
       ok: false,
       status: 503,
-      error: "Content push is disabled: set INGEST_TOKEN on the server to enable it.",
+      error: "Content writes are disabled: set INGEST_TOKEN on the server to enable them.",
     };
   }
   return { ok: true };

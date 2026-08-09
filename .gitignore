@@ -1,0 +1,2 @@
+# Local skill credentials — NEVER commit (this repo is public).
+.claude/skills/esat-content-generator/secrets.local.json

@@ -20,8 +20,8 @@ Environment=HOSTNAME=127.0.0.1
 # Persistent data dir OUTSIDE the app dir so pushed content survives deploys
 # (rsync --delete the app dir). Can be overridden in the EnvironmentFile.
 Environment=ESAT_DATA_DIR=/var/lib/esat-prep
-# Config/secrets (INGEST_TOKEN, ESAT_DATA_DIR, and optional ANTHROPIC_API_KEY/
-# ANTHROPIC_MODEL) live in this file, created during setup — see deploy/README.md.
+# Config/secrets (INGEST_TOKEN, DASHBOARD_PASSWORD, ESAT_DATA_DIR) live in this
+# file, created during setup — see deploy/README.md.
 EnvironmentFile=/etc/esat-prep/env
 
 # Use the absolute path to node. Find it with: which node

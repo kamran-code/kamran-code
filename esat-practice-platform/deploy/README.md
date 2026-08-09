@@ -162,46 +162,54 @@ In the repo: **Settings → Secrets and variables → Actions → New repository
 
 ---
 
-## Content ingest (push questions to the live app)
+## Content management & dashboard
 
-The app exposes an authenticated endpoint so generated content can be pushed
-without a redeploy:
+All content is managed at runtime through authenticated API endpoints (no
+redeploy). Two credentials, both in `/etc/esat-prep/env`:
+
+- `INGEST_TOKEN` — Bearer token for the write API (add/update/delete), used by
+  the `esat-content-generator` skill.
+- `DASHBOARD_PASSWORD` — password for the admin dashboard at `/dashboard`.
+
+Content is stored in `ESAT_DATA_DIR` (`/var/lib/esat-prep`), **outside** the app
+dir, so it survives `rsync --delete` on deploy. `bootstrap.sh` generates the
+token, prompts for / generates the password, writes both plus `ESAT_DATA_DIR`,
+and creates the data dir.
+
+Write API (all require `Authorization: Bearer <INGEST_TOKEN>`, or a valid
+dashboard session cookie):
 
 ```
-POST /api/questions/import
-Authorization: Bearer <INGEST_TOKEN>
-{ "questions": [ { section, topic, difficulty, question, options, correctIndex, explanation }, ... ] }
+GET  /api/questions?section=&difficulty=&topic=&source=&search=   (public read)
+POST /api/questions/import   { "questions": [ ...schema ] }        → { saved, skipped, errors }
+POST /api/questions/update   { "updates": [ { id, ...fields } ] }  → { updated, missing }
+POST /api/questions/delete   { "ids":[...] } | { "section":... } | { "all": true }  → { deleted }
 ```
 
-`bootstrap.sh` sets this up automatically: it generates an `INGEST_TOKEN`,
-writes it (and `ESAT_DATA_DIR=/var/lib/esat-prep`) to `/etc/esat-prep/env`, and
-creates the persistent data dir. Pushed content lands in `$ESAT_DATA_DIR`, which
-is **outside** the app dir so it survives `rsync --delete` on deploy.
-
-**Already set up your server before this feature?** Patch it once:
+**Already provisioned before these features?** Patch the server once:
 
 ```bash
-# generate a token and record it
 TOKEN=$(openssl rand -hex 32); echo "INGEST_TOKEN=$TOKEN"
-# persistent data dir, owned by the deploy user
 mkdir -p /var/lib/esat-prep && chown deploy:deploy /var/lib/esat-prep
-# add both to the env file
-printf 'INGEST_TOKEN=%s\nESAT_DATA_DIR=/var/lib/esat-prep\n' "$TOKEN" >> /etc/esat-prep/env
+printf 'INGEST_TOKEN=%s\nESAT_DATA_DIR=/var/lib/esat-prep\nDASHBOARD_PASSWORD=%s\n' \
+  "$TOKEN" "a-strong-password" >> /etc/esat-prep/env
 systemctl restart esat-prep
 ```
 
-Then use the token locally with the skill's push script:
+Then manage content locally with the skill:
 
 ```bash
 export ESAT_INGEST_TOKEN=<the token>
-export ESAT_API_URL=http://76.13.240.125
-node .claude/skills/esat-content-generator/push.mjs /tmp/esat-batch.json
+export ESAT_API_URL=https://sourceopen.in
+node .claude/skills/esat-content-generator/manage.mjs add /tmp/batch.json
+node .claude/skills/esat-content-generator/manage.mjs list --section physics
+node .claude/skills/esat-content-generator/manage.mjs delete --ids id1,id2
 ```
 
-Security: the endpoint requires the bearer token; without `INGEST_TOKEN` set, all
-write endpoints return 503 in production. Keep the token secret — it authorizes
-writes to your question bank. Rotate it by changing `/etc/esat-prep/env` and
-restarting the service.
+Security: writes require the token (or dashboard login); without `INGEST_TOKEN`
+set, write endpoints return 503 in production, and without `DASHBOARD_PASSWORD`
+the dashboard is disabled. Rotate by editing `/etc/esat-prep/env` and
+`systemctl restart esat-prep`.
 
 ## Verify & troubleshoot
 
