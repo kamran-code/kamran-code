@@ -70,7 +70,17 @@ jobs:
             printf '%s' "$VPS_SSH_KEY" | tr -d '[:space:]' | base64 -d > ~/.ssh/id_deploy
           fi
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -p "$SSH_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          # Best-effort known_hosts with retries. Don't hard-fail the job if a
+          # transient keyscan misses — the ssh/rsync steps below use
+          # StrictHostKeyChecking=accept-new so first-connect still works.
+          for i in 1 2 3 4 5; do
+            if ssh-keyscan -p "$SSH_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
+              break
+            fi
+            echo "ssh-keyscan attempt $i failed; retrying in 5s..."
+            sleep 5
+          done
+          true
 
       - name: Deploy to VPS
         env:
@@ -78,11 +88,12 @@ jobs:
           TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
           APP_DIR: ${{ secrets.VPS_APP_DIR }}
         run: |
+          SSH_OPTS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
           # Ensure the deploy directory exists.
-          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" "mkdir -p '$APP_DIR'"
+          ssh $SSH_OPTS -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" "mkdir -p '$APP_DIR'"
           # Sync the standalone bundle (server.js, node_modules, .next, static, public).
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" \
+            -e "ssh $SSH_OPTS -i ~/.ssh/id_deploy -p $SSH_PORT" \
             .next/standalone/ "$TARGET:$APP_DIR/"
 
       - name: Restart service & health check
@@ -90,7 +101,8 @@ jobs:
           SSH_PORT: ${{ secrets.VPS_PORT || '22' }}
           TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
         run: |
-          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" \
+          ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 \
+            -i ~/.ssh/id_deploy -p "$SSH_PORT" "$TARGET" \
             "sudo systemctl restart esat-prep && sleep 3 && systemctl is-active esat-prep"
 
       - name: Clean up SSH key
