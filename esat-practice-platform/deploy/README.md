@@ -11,6 +11,28 @@ node server.js on 127.0.0.1:3000 → Nginx reverse-proxies :80/:443 → users`.
 
 ## One-time server setup
 
+**Fast path — use the bootstrap script.** SSH in as root (or use Hostinger's
+hPanel → VPS → Browser terminal) and run `deploy/bootstrap.sh`, which does every
+step below in one go. First create the CI SSH key on your own machine
+(`ssh-keygen -t ed25519 -f esat-deploy -N ""`), then on the server:
+
+```bash
+# paste the script in, or fetch it from your repo, then:
+DOMAIN=esat.example.com EMAIL=you@example.com \
+DEPLOY_PUBKEY="ssh-ed25519 AAAA... github-actions-esat" \
+ANTHROPIC_API_KEY="sk-ant-..." \
+sudo bash bootstrap.sh
+```
+
+Omit `DOMAIN`/`EMAIL` to serve on the bare IP without HTTPS; omit
+`DEPLOY_PUBKEY`/`ANTHROPIC_API_KEY` to be prompted. Then add the GitHub secrets
+below and push to `main`. The manual steps that follow are the same work,
+spelled out, if you prefer to run them by hand.
+
+---
+
+### Manual steps
+
 SSH into your VPS as root (or a sudo user) and run the following.
 
 ### 1. Install Node.js 20 and Nginx
