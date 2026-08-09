@@ -1,17 +1,23 @@
 import { promises as fs } from "fs";
 import path from "path";
 import seed from "@/data/questions.json";
+import committedGenerated from "@/data/generated.json";
 import type { Question } from "./types";
 
-// Bundled seed content ships with the app. Generated/saved questions are
-// persisted to a JSON file at the project root so they survive a dev restart.
-// (In a serverless deployment, swap this file store for a database — the
-// read/write API below is intentionally the only thing the app depends on.)
+// Three content sources, in priority order:
+//   1. committed generated bank (src/data/generated.json) — produced offline by
+//      `npm run generate` (or authored by hand) and shipped via git/CI. This is
+//      how content reaches production WITHOUT an API key on the server.
+//   2. runtime file (data/generated.json at cwd) — written by the optional
+//      on-server /api/generate flow, only if an API key is present. Survives a
+//      dev restart; not required in production.
+//   3. bundled seed content (src/data/questions.json).
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const GENERATED_FILE = path.join(DATA_DIR, "generated.json");
 
 const seedQuestions = seed as Question[];
+const committedQuestions = committedGenerated as Question[];
 
 async function readGenerated(): Promise<Question[]> {
   try {
@@ -37,9 +43,9 @@ export interface QuestionFilter {
 }
 
 export async function getAllQuestions(): Promise<Question[]> {
-  const generated = await readGenerated();
-  // Newest generated content first, then seed content.
-  return [...generated, ...seedQuestions];
+  const runtime = await readGenerated();
+  // Runtime-saved first, then the committed generated bank, then seed content.
+  return [...runtime, ...committedQuestions, ...seedQuestions];
 }
 
 export async function getQuestions(

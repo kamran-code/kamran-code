@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ai-gen-m1-001",
+    "section": "mathematics1",
+    "topic": "Algebra and functions",
+    "difficulty": "easy",
+    "question": "Solve for x: 2(x - 3) = x + 4",
+    "options": ["8", "10", "-2", "2", "14"],
+    "correctIndex": 1,
+    "explanation": "Expand: 2x - 6 = x + 4. Subtract x from both sides: x - 6 = 4. Add 6: x = 10.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-m1-002",
+    "section": "mathematics1",
+    "topic": "Probability",
+    "difficulty": "easy",
+    "question": "A fair six-sided die is rolled once. What is the probability of rolling a prime number?",
+    "options": ["1/6", "1/3", "1/2", "2/3", "5/6"],
+    "correctIndex": 2,
+    "explanation": "The primes on a die are 2, 3, and 5 (three outcomes). Probability = 3/6 = 1/2.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-p-001",
+    "section": "physics",
+    "topic": "Mechanics and motion",
+    "difficulty": "easy",
+    "question": "A 2 kg object moves at 3 m/s. What is the magnitude of its momentum?",
+    "options": ["1.5 kg m/s", "5 kg m/s", "6 kg m/s", "0.67 kg m/s", "12 kg m/s"],
+    "correctIndex": 2,
+    "explanation": "Momentum p = m * v = 2 kg * 3 m/s = 6 kg m/s.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-p-002",
+    "section": "physics",
+    "topic": "Electricity and circuits",
+    "difficulty": "easy",
+    "question": "A resistor of 5 ohm carries a current of 2 A. What is the potential difference across it?",
+    "options": ["2.5 V", "7 V", "10 V", "0.4 V", "20 V"],
+    "correctIndex": 2,
+    "explanation": "By Ohm's law, V = I * R = 2 A * 5 ohm = 10 V.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-c-001",
+    "section": "chemistry",
+    "topic": "Rates and equilibria",
+    "difficulty": "medium",
+    "question": "What is the pH of a 0.01 mol/dm^3 solution of a strong monoprotic acid such as HCl?",
+    "options": ["1", "2", "0.01", "12", "7"],
+    "correctIndex": 1,
+    "explanation": "A strong monoprotic acid fully dissociates, so [H+] = 0.01 mol/dm^3. pH = -log10(0.01) = 2.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-c-002",
+    "section": "chemistry",
+    "topic": "Atomic structure",
+    "difficulty": "easy",
+    "question": "How many electrons are present in a chloride ion, Cl^- (atomic number 17)?",
+    "options": ["16", "17", "18", "35", "19"],
+    "correctIndex": 2,
+    "explanation": "A neutral chlorine atom has 17 electrons. The 1- charge means one extra electron: 17 + 1 = 18.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-b-001",
+    "section": "biology",
+    "topic": "Genetics and inheritance",
+    "difficulty": "easy",
+    "question": "During DNA replication, which base pairs with adenine (A)?",
+    "options": ["Guanine", "Cytosine", "Thymine", "Uracil", "Adenine"],
+    "correctIndex": 2,
+    "explanation": "In DNA, adenine pairs with thymine (A-T) via two hydrogen bonds. (Uracil replaces thymine only in RNA.)",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-b-002",
+    "section": "biology",
+    "topic": "Cell biology",
+    "difficulty": "easy",
+    "question": "In a cell, where does protein synthesis (translation) take place?",
+    "options": ["Nucleus", "Ribosome", "Mitochondrion", "Lysosome", "Golgi apparatus"],
+    "correctIndex": 1,
+    "explanation": "Translation — assembling amino acids into proteins from mRNA — occurs at ribosomes, free in the cytoplasm or bound to the rough endoplasmic reticulum.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-m2-001",
+    "section": "mathematics2",
+    "topic": "Differentiation",
+    "difficulty": "easy",
+    "question": "What is the derivative of f(x) = sin(x)?",
+    "options": ["-cos(x)", "cos(x)", "-sin(x)", "tan(x)", "sec(x)"],
+    "correctIndex": 1,
+    "explanation": "The derivative of sin(x) with respect to x is cos(x).",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  },
+  {
+    "id": "ai-gen-m2-002",
+    "section": "mathematics2",
+    "topic": "Integration",
+    "difficulty": "medium",
+    "question": "Evaluate the definite integral of 2x with respect to x from x = 0 to x = 2.",
+    "options": ["2", "4", "8", "1", "0"],
+    "correctIndex": 1,
+    "explanation": "The integral of 2x is x^2. Evaluate from 0 to 2: (2^2) - (0^2) = 4 - 0 = 4.",
+    "source": "ai",
+    "createdAt": "2026-08-09T00:00:00.000Z"
+  }
+]
