@@ -23,7 +23,7 @@ export default async function HomePage() {
             href="/generate"
             className="rounded-lg bg-white px-5 py-2.5 font-semibold text-brand-700 shadow hover:bg-brand-50"
           >
-            Generate questions →
+            Add content →
           </Link>
           <Link
             href="/practice"
@@ -89,8 +89,8 @@ export default async function HomePage() {
           />
           <Step
             n={2}
-            title="Generate your own"
-            body="Use AI to create fresh questions for any section, topic, and difficulty — then save them to your bank."
+            title="Add your own"
+            body="Create questions in the Content Studio (or paste an AI-generated batch) and push them live through the ingest API — no redeploy."
           />
           <Step
             n={3}

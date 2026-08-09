@@ -7,11 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "generate": "node scripts/generate.mjs"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.32.1",
     "next": "^15.5.23",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

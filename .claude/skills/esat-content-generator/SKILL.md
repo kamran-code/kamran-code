@@ -11,11 +11,8 @@ description: >-
 # ESAT Content Generator
 
 Author exam-style ESAT multiple-choice questions in the platform's exact schema,
-then deliver them one of two ways:
-
-1. **Auto-push** to the live app's authenticated ingest endpoint (no redeploy).
-2. **Commit** to `esat-practice-platform/src/data/generated.json` so CI/CD ships
-   them (version-controlled).
+then **push them to the live app's authenticated ingest endpoint**. Content is
+added at runtime — no redeploy, no committing data files.
 
 You (the model) do the authoring — no Anthropic API key is required anywhere.
 
@@ -73,9 +70,7 @@ set them**. A full reference schema is in `schema.json`.
 
 1. Write the requested questions as a JSON **array** to a file, e.g.
    `/tmp/esat-batch.json`, following the schema exactly.
-2. Deliver them:
-
-### Option A — Auto-push to the live app (no redeploy)
+2. Push them to the live app:
 
 Requires two environment variables:
 - `ESAT_INGEST_TOKEN` — the server's `INGEST_TOKEN` secret (never hardcode it).
@@ -91,18 +86,9 @@ The endpoint validates each question, appends valid ones to the live bank, and
 returns `{ saved, skipped, errors }`. New questions appear immediately — no
 deploy needed.
 
-### Option B — Commit to the repo (version-controlled, ships via CI)
-
-Append the array's items into
-`esat-practice-platform/src/data/generated.json` (keep it a single JSON array),
-then:
-
-```bash
-cd esat-practice-platform
-git add src/data/generated.json && git commit -m "Add ESAT questions" && git push
-```
-
-The deploy workflow ships them to the server on merge to `main`.
+> Content is only ever added through this endpoint (or the in-app Content
+> Studio, which posts to the same endpoint). There is no commit-a-data-file
+> path.
 
 ## The ingest endpoint (reference)
 

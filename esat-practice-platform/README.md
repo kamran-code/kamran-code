@@ -1,20 +1,22 @@
 # ESAT Practice Platform
 
-An AI-powered practice platform for the **ESAT** (Engineering & Science Admissions
-Test). Practice from a curated question bank, generate brand-new exam-style
-questions with AI, and test yourself with instant-scoring quizzes.
+A practice platform for the **ESAT** (Engineering & Science Admissions Test).
+Practice from a question bank, add new questions through an in-app **Content
+Studio** (or push them programmatically), and test yourself with instant-scoring
+quizzes.
 
-Built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, and the
-**Anthropic API** for question generation.
+Built with **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS**. The
+server needs **no AI API key** — content is authored elsewhere (in the UI, or by
+an assistant) and added at runtime through an authenticated ingest endpoint.
 
 ## Features
 
 - **Access stored content** — browse and filter a curated bank of ESAT questions
   across all five sections (Mathematics 1, Physics, Chemistry, Biology,
   Mathematics 2), with worked explanations.
-- **Generate your own** — use AI to create fresh questions for any section,
-  topic, and difficulty. Optionally paste reference material to ground them.
-  Save generated questions back into the bank.
+- **Add content in the UI** — the Content Studio lets you compose questions with
+  a form, or paste an AI-generated JSON batch, then push them **live** to the
+  bank through the ingest API. No redeploy.
 - **Take a quiz** — build a randomized quiz from the bank, answer, check, and get
   scored with a full review at the end.
 
@@ -24,24 +26,68 @@ Built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, and the
 cd esat-practice-platform
 npm install
 
-# Configure your Anthropic API key for AI generation
+# Enable content push locally (optional for browsing/quizzes)
 cp .env.example .env.local
-# then edit .env.local and set ANTHROPIC_API_KEY
+# edit .env.local: set INGEST_TOKEN to any value for local dev
 
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. Browsing and quizzes work with zero configuration;
+pushing content from the Content Studio requires an `INGEST_TOKEN` (entered in
+the UI, matched against the server's `INGEST_TOKEN`).
 
-> The curated bank, practice browsing, and quizzes work **without** an API key.
-> Only the **AI Generator** requires `ANTHROPIC_API_KEY`.
+## Configuration (server env)
 
-## Configuration
+| Variable        | Required        | Default        | Description                                                        |
+| --------------- | --------------- | -------------- | ------------------------------------------------------------------ |
+| `INGEST_TOKEN`  | for content push | —             | Bearer token required by `POST /api/questions/import`. Without it, writes are disabled in production (503). |
+| `ESAT_DATA_DIR` | recommended     | `<cwd>/data`   | Where pushed content is stored. In production set to a path **outside** the app dir (e.g. `/var/lib/esat-prep`) so it survives deploys. |
 
-| Variable            | Required | Default            | Description                          |
-| ------------------- | -------- | ------------------ | ------------------------------------ |
-| `ANTHROPIC_API_KEY` | for AI   | —                  | Anthropic API key for generation.    |
-| `ANTHROPIC_MODEL`   | no       | `claude-sonnet-5`  | Model used for generation.           |
+## How content flows
+
+```
+author (UI form / paste / assistant)  →  POST /api/questions/import (Bearer token)
+                                       →  stored in ESAT_DATA_DIR  →  served immediately
+```
+
+There is **one write path**: the authenticated ingest endpoint. Content added
+this way appears live with no redeploy. The app ships with a bundled baseline
+bank; everything you add at runtime is layered on top.
+
+**Content sources** (merged by `src/lib/store.ts`, in priority order):
+1. `ESAT_DATA_DIR/generated.json` — runtime content pushed via the ingest endpoint.
+2. `src/data/generated.json` — bundled baseline (committed).
+3. `src/data/questions.json` — bundled seed content.
+
+## The ingest endpoint
+
+```
+POST /api/questions/import
+Authorization: Bearer <INGEST_TOKEN>
+Content-Type: application/json
+
+{ "questions": [ { section, topic, difficulty, question, options, correctIndex, explanation }, ... ] }
+
+→ 200 { "saved": <n>, "skipped": <m>, "errors": [ "#i: reason", ... ] }
+→ 401 missing/invalid token   → 503 no INGEST_TOKEN set (production)   → 422 nothing valid
+```
+
+Each question is validated and normalized server-side (`src/lib/ingest.ts`);
+`id`, `source`, and `createdAt` are assigned for you.
+
+## Authoring content
+
+- **In the UI** — open **Content Studio** (`/generate`), enter your ingest token
+  once (stored only in your browser), compose or paste questions, and push.
+- **With the Claude skill** — [`.claude/skills/esat-content-generator/`](../.claude/skills/esat-content-generator/SKILL.md)
+  (repo root) knows the exact schema, authors questions with no API key, and
+  pushes via `push.mjs`:
+  ```bash
+  export ESAT_INGEST_TOKEN=...   # the server's INGEST_TOKEN
+  export ESAT_API_URL=http://your-server
+  node .claude/skills/esat-content-generator/push.mjs /tmp/batch.json
+  ```
 
 ## Project structure
 
@@ -50,99 +96,32 @@ src/
   app/
     page.tsx              Dashboard with stats and section links
     practice/             Filterable question bank
-    generate/             AI generation UI
+    generate/             Content Studio (compose / paste → push via ingest API)
     quiz/                 Quiz builder + runner
     api/
-      questions/          GET (list/filter) + POST (save generated)
-      generate/           POST (AI generation)
+      questions/          GET (list/filter)
+      questions/import/   POST (authenticated ingest — the only write path)
   components/             Nav, QuestionCard, QuizRunner, badges
   lib/
     esat.ts               Section + difficulty metadata
     types.ts              Shared types
-    store.ts              Question storage (seed JSON + runtime file)
-    anthropic.ts          Anthropic client + generation logic
+    store.ts              Question storage (runtime + committed + seed)
+    ingest.ts             Token auth + per-question validation
   data/
-    questions.json        Bundled seed question bank
+    questions.json        Bundled seed bank
+    generated.json        Bundled baseline generated bank
 ```
-
-## How content is stored
-
-- **Seed content** ships in `src/data/questions.json`.
-- **Generated content** the user saves is written to `data/generated.json` at the
-  project root (created on first save). This keeps the read/write surface tiny —
-  swap `src/lib/store.ts` for a database to deploy to a serverless/multi-instance
-  environment.
-
-## Generating content without a server API key
-
-Generation happens **offline**, where an API key already lives (your machine, CI,
-or an assistant), and the results are committed to `src/data/generated.json`.
-Your CI/CD then ships them to the server, which serves static content and needs
-**no Anthropic key**.
-
-```
-generate (with key)  →  src/data/generated.json  →  git push  →  CI deploy  →  server (no key)
-```
-
-Generate a batch locally:
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-... npm run generate -- \
-  --section physics --topic "Electricity and circuits" --difficulty medium --count 5
-
-# preview without writing:
-ANTHROPIC_API_KEY=sk-ant-... npm run generate -- --section biology --count 3 --dry-run
-```
-
-Then commit and push:
-
-```bash
-git add src/data/generated.json && git commit -m "Add generated physics questions" && git push
-```
-
-The push triggers the deploy workflow, which ships the updated bank to the VPS.
-Content can also simply be hand-authored (or authored by an assistant) directly
-in `src/data/generated.json` — same shape, same pipeline, zero API usage.
-
-**Content sources** (all merged by `src/lib/store.ts`, in priority order):
-1. `src/data/generated.json` — committed, shipped via git/CI (the offline pipeline).
-2. `data/generated.json` — optional runtime file written by the on-server
-   `/api/generate` flow **only if** the server has an API key. Not needed in production.
-3. `src/data/questions.json` — bundled seed content.
-
-With this pipeline you can remove `ANTHROPIC_API_KEY` from the server entirely;
-the AI Generator page/endpoint just returns a 503 if used there, which is fine.
-
-### Live push via the Claude skill (no redeploy)
-
-There's also a packaged Claude skill at
-[`.claude/skills/esat-content-generator/`](../../.claude/skills/esat-content-generator/SKILL.md)
-(repo root). It knows the exact schema, authors questions with no API key, and
-can **push straight to the running app** via an authenticated endpoint:
-
-```
-POST /api/questions/import
-Authorization: Bearer <INGEST_TOKEN>
-{ "questions": [ ...Question ] }
-```
-
-Pushed content is stored in `ESAT_DATA_DIR` (persistent, outside the app dir) and
-served immediately — no deploy. See `deploy/README.md` → **Content ingest** for
-server setup (`INGEST_TOKEN`, `ESAT_DATA_DIR`) and the skill's `push.mjs`.
 
 ## Deployment (Hostinger VPS via GitHub Actions)
 
 Push-to-deploy is configured in `.github/workflows/deploy.yml`: pushes to `main`
 build the app on a GitHub runner and ship the standalone bundle to the VPS over
-SSH, then restart a systemd service behind an Nginx reverse proxy.
+SSH, then restart a systemd service behind an Nginx reverse proxy. This deploys
+**code**; content is separate and added at runtime via the ingest endpoint.
 
-See **[`deploy/README.md`](./deploy/README.md)** for the full one-time server
-setup, the list of GitHub secrets to add, and troubleshooting. Server-side
-templates live in `deploy/` (`esat-prep.service`, `nginx.conf`).
+See **[`deploy/README.md`](./deploy/README.md)** for one-time server setup,
+GitHub secrets, the `INGEST_TOKEN`/`ESAT_DATA_DIR` setup, and troubleshooting.
 
 ## Notes
 
-- Question generation uses the Anthropic Messages API with **structured outputs**
-  (JSON Schema) so responses are always schema-valid, plus a post-validation pass
-  that drops any malformed question.
 - Not affiliated with any examining body. For practice use.
