@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkWriteAuth, normalizeQuestion } from "@/lib/ingest";
-import { saveQuestions } from "@/lib/store";
+import { addQuestions } from "@/lib/store";
 import type { Question } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -49,6 +49,6 @@ export async function POST(request: Request) {
     );
   }
 
-  await saveQuestions(valid);
+  await addQuestions(valid);
   return NextResponse.json({ saved: valid.length, skipped: errors.length, errors });
 }

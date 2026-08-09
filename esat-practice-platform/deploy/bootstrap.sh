@@ -10,9 +10,9 @@
 # and API key are read at runtime (prompted, or supplied via env vars).
 #
 # Non-interactive example:
-#   DOMAIN=esat.example.com \
+#   DOMAIN=sourceopen.in EMAIL=you@example.com \
 #   DEPLOY_PUBKEY="ssh-ed25519 AAAA... github-actions-esat" \
-#   ANTHROPIC_API_KEY="sk-ant-..." \
+#   INGEST_TOKEN="$(openssl rand -hex 32)" DASHBOARD_PASSWORD="a-strong-password" \
 #   bash bootstrap.sh
 #
 set -euo pipefail
@@ -22,10 +22,9 @@ APP_DIR="${APP_DIR:-/var/www/esat-prep}"
 DATA_DIR="${DATA_DIR:-/var/lib/esat-prep}"   # persistent, OUTSIDE app dir (survives deploys)
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 SERVICE="${SERVICE:-esat-prep}"
-DOMAIN="${DOMAIN:-}"            # e.g. esat.example.com; empty = serve on the IP
+DOMAIN="${DOMAIN:-}"            # e.g. sourceopen.in; empty = serve on the IP
 EMAIL="${EMAIL:-}"             # set to auto-run certbot for DOMAIN
 NODE_MAJOR="${NODE_MAJOR:-20}"
-ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-5}"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Please run as root (e.g. sudo bash bootstrap.sh)." >&2
@@ -42,15 +41,19 @@ if [ -z "${DEPLOY_PUBKEY:-}" ]; then
   exit 1
 fi
 
-if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  read -rsp "Paste your ANTHROPIC_API_KEY (optional — Enter to skip; generation is done offline): " ANTHROPIC_API_KEY
-  echo
-fi
-
-# Ingest token authorizes content pushed to /api/questions/import. Auto-generate
-# one if not supplied.
+# Ingest token authorizes content writes (add/update/delete). Auto-generate if
+# not supplied.
 if [ -z "${INGEST_TOKEN:-}" ]; then
   INGEST_TOKEN="$(openssl rand -hex 32 2>/dev/null || head -c 48 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 48)"
+fi
+
+# Dashboard password. Prompt (hidden) or auto-generate.
+if [ -z "${DASHBOARD_PASSWORD:-}" ]; then
+  read -rsp "Set a DASHBOARD_PASSWORD (Enter to auto-generate one): " DASHBOARD_PASSWORD
+  echo
+fi
+if [ -z "${DASHBOARD_PASSWORD:-}" ]; then
+  DASHBOARD_PASSWORD="$(openssl rand -hex 12 2>/dev/null || head -c 18 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 18)"
 fi
 
 # ---- Install packages --------------------------------------------------------
@@ -80,14 +83,12 @@ chmod 600 "$AUTH"
 echo "==> Writing /etc/esat-prep/env..."
 mkdir -p /etc/esat-prep
 cat >/etc/esat-prep/env <<EOF
-ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
 ESAT_DATA_DIR=${DATA_DIR}
 INGEST_TOKEN=${INGEST_TOKEN}
+DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD}
 EOF
 chmod 640 /etc/esat-prep/env
 chown root:"$DEPLOY_USER" /etc/esat-prep/env
-[ -z "${ANTHROPIC_API_KEY:-}" ] && echo "    (i) API key left blank — fine; generation is done offline via the skill/script."
 
 # ---- systemd service ---------------------------------------------------------
 echo "==> Installing systemd service '$SERVICE'..."
@@ -172,7 +173,10 @@ echo "==> Server setup complete."
 echo "    Next: add the GitHub secrets and push to main to trigger the first deploy."
 echo "    VPS_APP_DIR must be: $APP_DIR"
 echo
-echo "    Content ingest is enabled. To push questions from the skill, set locally:"
+echo "    Dashboard password (for /dashboard):"
+echo "      DASHBOARD_PASSWORD = $DASHBOARD_PASSWORD"
+echo
+echo "    Content management (skill) — set these locally:"
 echo "      export ESAT_INGEST_TOKEN=$INGEST_TOKEN"
-echo "      export ESAT_API_URL=http://<your-ip-or-domain>"
-echo "    (Keep this token secret — it authorizes writes to your question bank.)"
+echo "      export ESAT_API_URL=${DOMAIN:+https://$DOMAIN}"
+echo "    Keep both secret — they authorize writes and admin access."
