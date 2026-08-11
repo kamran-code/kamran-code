@@ -21,7 +21,9 @@ export default function DashboardLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Login failed.");
-      router.replace("/dashboard");
+      // Return to where the user was headed (set by the middleware), else home.
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.replace(next && next.startsWith("/") ? next : "/");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");
@@ -33,8 +35,10 @@ export default function DashboardLoginPage() {
   return (
     <div className="mx-auto max-w-sm space-y-6 pt-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">Enter the dashboard password.</p>
+        <h1 className="text-2xl font-bold text-slate-900">ESAT Practice</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          This is a private practice site. Enter the password to continue.
+        </p>
       </div>
       <form
         onSubmit={submit}
