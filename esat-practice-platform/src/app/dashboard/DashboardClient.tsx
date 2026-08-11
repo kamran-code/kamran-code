@@ -12,7 +12,7 @@ interface Stats {
   byDifficulty: Record<string, number>;
 }
 
-const LETTERS = ["A", "B", "C", "D", "E", "F"];
+const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
 export default function DashboardClient({ initialStats }: { initialStats: Stats }) {
   const router = useRouter();

@@ -1,7 +1,20 @@
 // Static metadata describing the ESAT (Engineering & Science Admissions Test).
-// The ESAT is used by universities such as Cambridge and Imperial for
-// engineering and science undergraduate admissions. It is delivered as
-// multiple-choice questions across several subject sections.
+//
+// The ESAT is administered by UAT-UK (University Admissions Tests) and used by
+// universities such as Cambridge and Imperial for engineering and science
+// undergraduate admissions. It replaced the NSAA/ENGAA from 2024 entry.
+//
+// Format (per the official UAT-UK content specification):
+//   - Five modules exist: Mathematics 1, Biology, Chemistry, Physics,
+//     Mathematics 2. Most courses require Mathematics 1 + two further modules.
+//   - Each module: 27 multiple-choice questions, 40 minutes, separately timed.
+//   - Computer-based. Calculators are NOT permitted.
+//   - 1 mark per correct answer; no negative marking. Modules scored separately.
+//
+// This platform focuses on the three modules required for engineering
+// (Mathematics 1, Mathematics 2, Physics). The section `topics` below mirror
+// the top-level headings of the official specification (Appendix 1). All
+// modules assume the Mathematics 1 content.
 
 export const SECTIONS = [
   {
@@ -10,15 +23,15 @@ export const SECTIONS = [
     short: "Maths 1",
     color: "bg-blue-100 text-blue-800 border-blue-200",
     description:
-      "Core mathematics: algebra, geometry, sequences, probability, and statistics.",
+      "Core mathematics assumed by every module: number, algebra, ratio, geometry, statistics and probability. No calculator.",
     topics: [
-      "Algebra and functions",
-      "Sequences and series",
-      "Coordinate geometry",
-      "Trigonometry",
-      "Exponentials and logarithms",
-      "Probability",
+      "Units",
+      "Number",
+      "Ratio and proportion",
+      "Algebra",
+      "Geometry",
       "Statistics",
+      "Probability",
     ],
   },
   {
@@ -27,49 +40,15 @@ export const SECTIONS = [
     short: "Physics",
     color: "bg-purple-100 text-purple-800 border-purple-200",
     description:
-      "Mechanics, electricity, waves, energy, and modern physics fundamentals.",
+      "Electricity, magnetism, mechanics, thermal physics, matter, waves and radioactivity. Assumes Mathematics 1.",
     topics: [
-      "Mechanics and motion",
-      "Electricity and circuits",
-      "Waves and optics",
-      "Energy and work",
+      "Electricity",
+      "Magnetism",
+      "Mechanics",
       "Thermal physics",
-      "Fields and forces",
-      "Modern physics",
-    ],
-  },
-  {
-    id: "chemistry",
-    name: "Chemistry",
-    short: "Chemistry",
-    color: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    description:
-      "Atomic structure, bonding, reactions, energetics, and organic chemistry.",
-    topics: [
-      "Atomic structure",
-      "Bonding and structure",
-      "Stoichiometry",
-      "Energetics",
-      "Rates and equilibria",
-      "Redox and electrochemistry",
-      "Organic chemistry",
-    ],
-  },
-  {
-    id: "biology",
-    name: "Biology",
-    short: "Biology",
-    color: "bg-amber-100 text-amber-800 border-amber-200",
-    description:
-      "Cells, genetics, physiology, ecology, and the fundamentals of living systems.",
-    topics: [
-      "Cell biology",
-      "Genetics and inheritance",
-      "Physiology",
-      "Ecology",
-      "Enzymes and biochemistry",
-      "Homeostasis",
-      "Evolution",
+      "Matter",
+      "Waves",
+      "Radioactivity",
     ],
   },
   {
@@ -78,15 +57,16 @@ export const SECTIONS = [
     short: "Maths 2",
     color: "bg-rose-100 text-rose-800 border-rose-200",
     description:
-      "Advanced mathematics: calculus, further algebra, and mechanics-oriented problems.",
+      "Advanced mathematics: further algebra, sequences and series, coordinate geometry, trigonometry, logarithms and calculus. Assumes Mathematics 1.",
     topics: [
+      "Algebra and functions",
+      "Sequences and series",
+      "Coordinate geometry",
+      "Trigonometry",
+      "Exponentials and logarithms",
       "Differentiation",
       "Integration",
-      "Further algebra",
-      "Graphs and transformations",
-      "Vectors",
-      "Kinematics",
-      "Proof and reasoning",
+      "Graphs of functions",
     ],
   },
 ] as const;
