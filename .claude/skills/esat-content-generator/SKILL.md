@@ -3,10 +3,11 @@ name: esat-content-generator
 description: >-
   Generate and manage ESAT (Engineering & Science Admissions Test) practice
   questions for the ESAT Practice Platform. Authors exam-accurate questions in
-  the exact JSON schema for Mathematics 1, Physics, and Mathematics 2, and adds,
-  updates, or deletes them (single or bulk) through the app's authenticated API.
-  Use when asked to create, write, add, edit, fix, or remove ESAT/practice/exam
-  questions, or to manage the question bank.
+  the exact JSON schema for Mathematics 1, Physics, and Mathematics 2 — either
+  from scratch or from a pasted source — and adds, updates, or deletes them
+  (single or bulk) through the app's authenticated API. Use when asked to create,
+  write, add, edit, fix, remove, or import ESAT/practice/exam questions, or to
+  manage the question bank.
 ---
 
 # ESAT Content Generator & Manager
@@ -34,6 +35,30 @@ Cambridge/Imperial), and generates **only** these:
 Chemistry and Biology are **out of scope** — do not author them; the server
 rejects them.
 
+## Working from a pasted source (ask first, every time)
+
+When the user provides source material — pastes a past paper or textbook
+extract, gives a PDF/URL, or points at a specific set of questions — **do not
+generate or push anything until you have asked which mode they want**:
+
+1. **Exact** — transcribe the source's questions faithfully into the schema,
+   changing only formatting (maths rendered as plain text; the answer choices
+   split into the `options` array; the marked answer set as `correctIndex`).
+   Wording, numbers, and options are preserved.
+2. **Similar** — author new questions closely modelled on the source: same
+   topics, difficulty, and style, but different numbers and wording.
+3. **New** — fresh questions on the same topics, not tied to the source.
+
+Ask this even when the request seems obvious, and wait for the answer before
+formatting or calling `add`. If the user has already stated the mode in their
+message, honour it without re-asking.
+
+> This is a **private, personal practice** tool. Note that the platform's quiz
+> is currently reachable at its public URL, so anything pushed can be seen by
+> visitors. Keep **Exact** transcriptions of third-party/copyrighted papers for
+> a build where the quiz is access-controlled; use **Similar**/**New** for
+> anything served publicly.
+
 ## What the real ESAT is (author to this)
 
 The ESAT is administered by **UAT-UK** (University Admissions Tests, delivered
@@ -52,10 +77,11 @@ via Pearson VUE) and replaced the NSAA/ENGAA from 2024 entry. Match its style:
 - All modules **assume Mathematics 1** knowledge; Mathematics 2 additionally
   assumes the advanced-maths content.
 
-### Reference papers for style (author fresh — never copy)
+### Reference papers for style
 
-Draw on the style/difficulty of legacy admissions papers, but always write
-**new** questions:
+In **Similar**/**New** mode, draw on the style and difficulty of these legacy
+admissions papers (author new questions, don't reproduce them). In **Exact**
+mode, transcribe whatever source the user supplied.
 
 - **Mathematics 1** — TMUA, ENGAA Section 1 (maths), NSAA maths, ECAA maths.
 - **Mathematics 2** — NSAA Advanced Maths (the "Advanced Maths & Physics"
@@ -134,8 +160,9 @@ Use these exact topic strings so the app's filters and quiz selection line up.
 3. Use **4–8 options** (match the real exam; 5 is a sensible default). Set
    `correctIndex` to the right one; distractors should be plausible (common
    mistakes, sign slips, unit errors, off-by-one).
-4. Self-contained; write fresh questions in ESAT style, not verbatim textbook or
-   past-paper items.
+4. Self-contained. In **Similar**/**New** mode write fresh questions in ESAT
+   style; in **Exact** mode transcribe the supplied source faithfully (and still
+   verify the answer key — rule 1 applies in every mode).
 5. Vary topic/difficulty across a batch unless a specific slice is requested.
 6. Since diagrams can't be embedded, describe any needed setup in words (or avoid
    diagram-dependent items).
