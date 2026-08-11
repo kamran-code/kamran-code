@@ -6,12 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "rm -rf .next/standalone/.next/static .next/standalone/public && cp -r .next/static .next/standalone/.next/static && (cp -r public .next/standalone/public 2>/dev/null || true)",
     "start": "next start",
     "lint": "next lint"
-  },
-  "engines": {
-    "node": ">=20"
   },
   "dependencies": {
     "next": "^15.5.23",
