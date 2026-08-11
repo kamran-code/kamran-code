@@ -1,11 +1,5 @@
-name: Deploy ESAT Practice Platform (VPS — manual only)
+name: Deploy ESAT Practice Platform
 
-# Deployment now happens on Railway via its native GitHub push-to-deploy
-# integration (see esat-practice-platform/deploy/RAILWAY.md), so this VPS
-# workflow no longer runs on push. It is kept as a manual fallback: trigger it
-# from the Actions tab (Run workflow) if you ever need to ship to the Hostinger
-# VPS again.
-#
 # Builds the Next.js app on the GitHub runner and ships the self-contained
 # standalone bundle to the Hostinger VPS over SSH, then restarts the service.
 #
@@ -19,8 +13,11 @@ name: Deploy ESAT Practice Platform (VPS — manual only)
 # The ANTHROPIC_API_KEY lives on the server (see deploy/README.md), not here.
 
 on:
-  # Manual only. Railway handles auto-deploy on push; run this by hand from the
-  # Actions tab if you need the VPS target.
+  push:
+    branches: [main]
+    paths:
+      - "esat-practice-platform/**"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 
 # Never run two deploys at once; cancel an in-flight one if a newer push lands.
