@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { GeneratedQuestion, Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "./SectionBadge";
 
-const LETTERS = ["A", "B", "C", "D", "E", "F"];
+const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
 type CardQuestion = Question | (GeneratedQuestion & { section?: string });
 

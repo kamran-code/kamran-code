@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import seed from "@/data/questions.json";
 import generated from "@/data/generated.json";
+import { SECTIONS } from "./esat";
 import type { Question } from "./types";
 
 // Single mutable store. The canonical file lives in ESAT_DATA_DIR (set this to a
@@ -13,10 +14,15 @@ import type { Question } from "./types";
 const DATA_DIR = process.env.ESAT_DATA_DIR || path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "questions.json");
 
+// The platform is scoped to the three modules required for engineering
+// (Mathematics 1, Mathematics 2, Physics). Filter the bundled starter content
+// to those sections so any legacy Chemistry/Biology seed items never surface.
+const VALID_SECTIONS = new Set<string>(SECTIONS.map((s) => s.id));
+
 const BUNDLED_STARTER: Question[] = [
   ...(generated as Question[]),
   ...(seed as Question[]),
-];
+].filter((q) => VALID_SECTIONS.has(q.section));
 
 async function fileExists(): Promise<boolean> {
   try {

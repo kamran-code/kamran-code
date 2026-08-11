@@ -16,7 +16,7 @@
       "properties": {
         "section": {
           "type": "string",
-          "enum": ["mathematics1", "physics", "chemistry", "biology", "mathematics2"]
+          "enum": ["mathematics1", "physics", "mathematics2"]
         },
         "topic": { "type": "string" },
         "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
@@ -24,10 +24,10 @@
         "options": {
           "type": "array",
           "items": { "type": "string" },
-          "minItems": 5,
-          "maxItems": 5
+          "minItems": 4,
+          "maxItems": 8
         },
-        "correctIndex": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "correctIndex": { "type": "integer", "minimum": 0, "maximum": 7 },
         "explanation": { "type": "string", "minLength": 1 }
       },
       "required": ["section", "difficulty", "question", "options", "correctIndex", "explanation"],
