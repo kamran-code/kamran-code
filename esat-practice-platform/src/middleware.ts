@@ -74,12 +74,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Pages: send to login, remembering where they were headed.
+  // Pages: render the login page in place with a REWRITE (not a redirect).
+  //
+  // A redirect would need an absolute URL, but behind the Nginx reverse proxy
+  // the request Host is the internal upstream (e.g. localhost:3000), so the
+  // redirect would wrongly send the browser to localhost:3000. A rewrite is
+  // resolved server-side, so the host is irrelevant and the browser's address
+  // bar stays on the real public URL (https://sourceopen.in/...). The login
+  // page sends the user home after a successful sign-in.
   const url = req.nextUrl.clone();
   url.pathname = "/dashboard/login";
-  url.search = "";
-  url.searchParams.set("next", pathname);
-  return NextResponse.redirect(url);
+  return NextResponse.rewrite(url);
 }
 
 export const config = {
