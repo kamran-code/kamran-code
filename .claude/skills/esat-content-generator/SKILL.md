@@ -4,7 +4,8 @@ description: >-
   Generate and manage ESAT (Engineering & Science Admissions Test) practice
   questions for the ESAT Practice Platform. Authors exam-accurate questions in
   the exact JSON schema for Mathematics 1, Physics, and Mathematics 2 — either
-  from scratch or from a pasted source — and adds, updates, or deletes them
+  from scratch or from a provided source (a PDF/image file read directly is most
+  faithful; pasted text also works) — and adds, updates, or deletes them
   (single or bulk) through the app's authenticated API. Use when asked to create,
   write, add, edit, fix, remove, or import ESAT/practice/exam questions, or to
   manage the question bank.
@@ -60,6 +61,36 @@ wording in Exact mode.
 > the signed-in owner and is never publicly served. Transcribe material you
 > have legitimate access to — your own notes, or your institute's / subscribed
 > materials — and keep it within this private tool (don't redistribute it).
+
+### Ingesting a source accurately (don't lose content)
+
+Copy-pasting text out of a PDF is lossy — it mangles maths (superscripts,
+subscripts, fractions, √, π), flattens tables, and silently drops figure-based
+questions and sometimes whole items. Transcribing from that pasted text is the
+main cause of missed content. Instead:
+
+1. **Give Claude the file itself — do not paste text.** Put the PDF (or image)
+   somewhere Claude Code can read it and let Claude **read the file directly**;
+   it reads PDFs and images natively, so it sees the real maths, layout, and
+   figures. For a long paper, read it in **page ranges** so nothing is skipped.
+   This is both "pass the file to the LLM" and the most faithful conversion —
+   no separate text/Markdown extractor needed.
+2. **Verify completeness.** Note how many questions the source has and confirm
+   you transcribed exactly that many; report any you could not (see step 4).
+3. **Maths → plain text, exactly.** Render maths in the schema conventions
+   (`^` powers, `*`, `/`, `sqrt()`, `pi`) with values kept exact — don't
+   paraphrase or round.
+4. **Figures / diagrams.** The schema is text-only. If a question needs a
+   figure, describe it in words inside `question` so the item stands alone; if
+   it truly can't work without the image, **skip it and list which you skipped**
+   rather than inventing content. (If you need real diagram support, that's an
+   app change — ask the owner.)
+
+**Fallback (huge files or a runtime without file reading):** convert to Markdown
+first with a structure-preserving extractor, then transcribe from the Markdown —
+e.g. `pdftotext -layout in.pdf out.txt` or a Markdown extractor like
+`python -m pymupdf4llm in.pdf`. For scanned/image PDFs, Claude reading the pages
+directly beats OCR text.
 
 ## What the real ESAT is (author to this)
 
