@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "./SectionBadge";
+import { QuestionFigure } from "./QuestionFigure";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
@@ -84,6 +85,7 @@ export function QuizRunner({
                   </span>
                 </div>
                 <p className="mb-2 font-medium text-slate-900">{rq.question}</p>
+                <QuestionFigure image={rq.image} alt={rq.imageAlt} />
                 <p className="text-sm text-slate-600">
                   Correct answer:{" "}
                   <span className="font-semibold">
@@ -129,6 +131,7 @@ export function QuizRunner({
         <p className="mb-4 whitespace-pre-wrap text-lg font-medium text-slate-900">
           {q.question}
         </p>
+        <QuestionFigure image={q.image} alt={q.imageAlt} className="mb-4" />
         <ul className="space-y-2">
           {q.options.map((opt, i) => {
             const isSelected = selected === i;

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DIFFICULTIES, SECTIONS } from "@/lib/esat";
 import type { Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "@/components/SectionBadge";
+import { QuestionFigure } from "@/components/QuestionFigure";
 
 interface Stats {
   total: number;
@@ -198,6 +199,7 @@ export default function DashboardClient({ initialStats }: { initialStats: Stats 
                   <span className="text-xs text-slate-300">{q.id}</span>
                 </div>
                 <p className="font-medium text-slate-900">{q.question}</p>
+                <QuestionFigure image={q.image} alt={q.imageAlt} />
                 <ul className="mt-1 text-sm text-slate-600">
                   {q.options.map((o, i) => (
                     <li key={i} className={i === q.correctIndex ? "font-semibold text-green-700" : ""}>

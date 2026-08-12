@@ -28,7 +28,15 @@
           "maxItems": 8
         },
         "correctIndex": { "type": "integer", "minimum": 0, "maximum": 7 },
-        "explanation": { "type": "string", "minLength": 1 }
+        "explanation": { "type": "string", "minLength": 1 },
+        "image": {
+          "type": "string",
+          "description": "Optional figure: inline SVG markup, a data: URI, or an http(s) URL. Rendered inside an <img> (SVG scripts are neutralized). Max ~500 KB."
+        },
+        "imageAlt": {
+          "type": "string",
+          "description": "Optional short text description of the figure."
+        }
       },
       "required": ["section", "difficulty", "question", "options", "correctIndex", "explanation"],
       "additionalProperties": false

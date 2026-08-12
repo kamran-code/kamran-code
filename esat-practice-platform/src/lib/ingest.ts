@@ -1,5 +1,6 @@
 import { SECTIONS } from "./esat";
 import { isAdminRequest } from "./auth";
+import { normalizeImage } from "./figure";
 import type { Question } from "./types";
 
 const VALID_SECTIONS = new Set<string>(SECTIONS.map((s) => s.id));
@@ -87,6 +88,12 @@ export function normalizeQuestion(
       ? q.id.trim()
       : `ai-import-${Date.now()}-${index}`;
 
+  const image = normalizeImage(q.image);
+  const imageAlt =
+    image && typeof q.imageAlt === "string" && q.imageAlt.trim()
+      ? q.imageAlt.trim()
+      : undefined;
+
   return {
     ok: true,
     question: {
@@ -98,6 +105,8 @@ export function normalizeQuestion(
       options,
       correctIndex,
       explanation,
+      ...(image ? { image } : {}),
+      ...(imageAlt ? { imageAlt } : {}),
       source: q.source === "seed" ? "seed" : "ai",
       createdAt: new Date().toISOString(),
     },
