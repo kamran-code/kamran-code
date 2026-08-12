@@ -1,12 +1,17 @@
 # 💫 About Me
 
-I'm a **Remote Software Engineer & AI Application Engineer** building intelligent, scalable digital products across web and mobile platforms.
+I'm a **Software Engineer at XLEducation (UK)**, working mainly on **AI application development** — building intelligent, production-ready products across web and mobile with a range of tech stacks.
 
-With a strong foundation in backend engineering and modern full-stack development, I specialize in integrating **AI into real-world applications** — from smart automation to conversational systems and data-driven platforms.
+I work across the full stack and specialize in integrating **AI into real-world applications** — LLM-powered features, retrieval-augmented generation, agent workflows, and data-driven platforms — backed by solid backend engineering.
 
-I actively work with **LLM-powered architectures**, building production-ready AI solutions using model orchestration, RAG pipelines, and vector databases.
+I’m passionate about turning complex problems into shipped products and exploring the cutting edge of applied AI.
 
-I’m passionate about solving complex problems, shipping impactful products, and exploring the cutting edge of applied AI.
+---
+
+# 🏢 Experience
+
+**Software Engineer — XLEducation (UK)**
+AI application development across multiple tech stacks — designing and shipping LLM-powered features, RAG systems, agent workflows, and automation for real-world education products.
 
 ---
 
@@ -54,4 +59,4 @@ AI Agents • Advanced RAG Architectures • Scalable AI Systems • Applied LLM
 
 # 🤝 Open to
 
-Remote opportunities • AI product development • Innovative collaborations • Impact-driven projects
+AI product development • Innovative collaborations • Impact-driven projects
