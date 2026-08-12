@@ -36,9 +36,9 @@ export async function POST(request: Request) {
         !!u && typeof (u as { id?: unknown }).id === "string",
     )
     .map((u) => {
+      const clean = { ...u };
       // Sanitize any figure being set; allow clearing with an empty/null value.
-      if ("image" in u) {
-        const clean = { ...u };
+      if ("image" in clean) {
         const raw = (u as { image?: unknown }).image;
         if (raw === null || raw === "") clean.image = undefined;
         else {
@@ -46,9 +46,14 @@ export async function POST(request: Request) {
           if (ni) clean.image = ni;
           else delete clean.image; // invalid → leave existing untouched
         }
-        return clean;
       }
-      return u;
+      // An empty/blank alt clears the stored alt text.
+      if ("imageAlt" in clean) {
+        const alt = (u as { imageAlt?: unknown }).imageAlt;
+        clean.imageAlt =
+          typeof alt === "string" && alt.trim() ? alt.trim() : undefined;
+      }
+      return clean;
     });
   if (updates.length === 0) {
     return NextResponse.json(

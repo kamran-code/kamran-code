@@ -7,6 +7,7 @@ import type { Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "@/components/SectionBadge";
 import { QuestionFigure } from "@/components/QuestionFigure";
 import { AddQuestionForm } from "@/components/AddQuestionForm";
+import { QuestionForm } from "@/components/QuestionForm";
 
 interface Stats {
   total: number;
@@ -23,6 +24,7 @@ export default function DashboardClient({ initialStats }: { initialStats: Stats 
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // filters
   const [section, setSection] = useState("");
@@ -188,38 +190,58 @@ export default function DashboardClient({ initialStats }: { initialStats: Stats 
         )}
         {questions.map((q) => (
           <div key={q.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={selected.has(q.id)}
-                onChange={() => toggle(q.id)}
-                className="mt-1 h-4 w-4 accent-brand-600"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <SectionBadge section={q.section} />
-                  <DifficultyBadge difficulty={q.difficulty} />
-                  <span className="text-xs text-slate-500">{q.topic}</span>
-                  <span className="text-xs text-slate-300">{q.id}</span>
-                </div>
-                <p className="font-medium text-slate-900">{q.question}</p>
-                <QuestionFigure image={q.image} alt={q.imageAlt} />
-                <ul className="mt-1 text-sm text-slate-600">
-                  {q.options.map((o, i) => (
-                    <li key={i} className={i === q.correctIndex ? "font-semibold text-green-700" : ""}>
-                      {LETTERS[i]}. {o}{i === q.correctIndex ? "  ✓" : ""}
-                    </li>
-                  ))}
-                </ul>
+            {editingId === q.id ? (
+              <div className="space-y-3">
+                <div className="text-xs font-semibold text-slate-500">Editing {q.id}</div>
+                <QuestionForm
+                  mode="edit"
+                  initial={q}
+                  onDone={() => { setEditingId(null); load(); }}
+                  onCancel={() => setEditingId(null)}
+                />
               </div>
-              <button
-                onClick={() => deleteIds([q.id])}
-                disabled={busy}
-                className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
+            ) : (
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selected.has(q.id)}
+                  onChange={() => toggle(q.id)}
+                  className="mt-1 h-4 w-4 accent-brand-600"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <SectionBadge section={q.section} />
+                    <DifficultyBadge difficulty={q.difficulty} />
+                    <span className="text-xs text-slate-500">{q.topic}</span>
+                    <span className="text-xs text-slate-300">{q.id}</span>
+                  </div>
+                  <p className="font-medium text-slate-900">{q.question}</p>
+                  <QuestionFigure image={q.image} alt={q.imageAlt} />
+                  <ul className="mt-1 text-sm text-slate-600">
+                    {q.options.map((o, i) => (
+                      <li key={i} className={i === q.correctIndex ? "font-semibold text-green-700" : ""}>
+                        {LETTERS[i]}. {o}{i === q.correctIndex ? "  ✓" : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <button
+                    onClick={() => setEditingId(q.id)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteIds([q.id])}
+                    disabled={busy}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
