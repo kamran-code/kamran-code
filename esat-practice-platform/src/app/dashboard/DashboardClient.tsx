@@ -6,6 +6,7 @@ import { DIFFICULTIES, SECTIONS } from "@/lib/esat";
 import type { Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "@/components/SectionBadge";
 import { QuestionFigure } from "@/components/QuestionFigure";
+import { AddQuestionForm } from "@/components/AddQuestionForm";
 
 interface Stats {
   total: number;
@@ -100,8 +101,8 @@ export default function DashboardClient({ initialStats }: { initialStats: Stats 
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
           <p className="mt-1 text-sm text-slate-600">
-            {stats.total} question(s) stored. Content is managed via the ingest
-            API / skill; use this view to inspect and delete.
+            {stats.total} question(s) stored. Add questions here or via the
+            skill; use this view to inspect, filter, and delete.
           </p>
         </div>
         <button
@@ -134,6 +135,9 @@ export default function DashboardClient({ initialStats }: { initialStats: Stats 
           ))}
         </div>
       </div>
+
+      {/* Manual add */}
+      <AddQuestionForm onAdded={load} />
 
       {/* Filters */}
       <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
