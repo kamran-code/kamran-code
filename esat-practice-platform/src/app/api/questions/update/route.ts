@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkWriteAuth } from "@/lib/ingest";
+import { normalizeImage } from "@/lib/figure";
 import { updateQuestions } from "@/lib/store";
 import type { Question } from "@/lib/types";
 
@@ -29,10 +30,26 @@ export async function POST(request: Request) {
       ? [b]
       : [];
 
-  const updates = list.filter(
-    (u): u is Partial<Question> & { id: string } =>
-      !!u && typeof (u as { id?: unknown }).id === "string",
-  );
+  const updates = list
+    .filter(
+      (u): u is Partial<Question> & { id: string } =>
+        !!u && typeof (u as { id?: unknown }).id === "string",
+    )
+    .map((u) => {
+      // Sanitize any figure being set; allow clearing with an empty/null value.
+      if ("image" in u) {
+        const clean = { ...u };
+        const raw = (u as { image?: unknown }).image;
+        if (raw === null || raw === "") clean.image = undefined;
+        else {
+          const ni = normalizeImage(raw);
+          if (ni) clean.image = ni;
+          else delete clean.image; // invalid → leave existing untouched
+        }
+        return clean;
+      }
+      return u;
+    });
   if (updates.length === 0) {
     return NextResponse.json(
       { error: 'Provide "updates": [{ id, ...fields }] (each needs an "id").' },

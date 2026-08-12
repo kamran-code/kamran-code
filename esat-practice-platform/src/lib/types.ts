@@ -9,6 +9,10 @@ export interface Question {
   options: string[];
   correctIndex: number;
   explanation: string;
+  /** Optional figure: inline SVG, a data: URI, or an http(s) URL. */
+  image?: string;
+  /** Optional short description of the figure (alt text). */
+  imageAlt?: string;
   /** "seed" for bundled content, "ai" for generated content. */
   source: "seed" | "ai";
   createdAt: string;
@@ -22,6 +26,8 @@ export interface GeneratedQuestion {
   explanation: string;
   topic: string;
   difficulty: string;
+  image?: string;
+  imageAlt?: string;
 }
 
 export interface GenerateRequest {

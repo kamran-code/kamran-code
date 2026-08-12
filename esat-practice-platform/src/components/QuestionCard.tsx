@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { GeneratedQuestion, Question } from "@/lib/types";
 import { DifficultyBadge, SectionBadge } from "./SectionBadge";
+import { QuestionFigure } from "./QuestionFigure";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
@@ -27,6 +28,8 @@ export function QuestionCard({ question }: { question: CardQuestion }) {
       <p className="mb-4 whitespace-pre-wrap font-medium text-slate-900">
         {question.question}
       </p>
+
+      <QuestionFigure image={question.image} alt={question.imageAlt} />
 
       <ul className="space-y-2">
         {question.options.map((opt, i) => {

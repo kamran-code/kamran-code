@@ -80,11 +80,13 @@ main cause of missed content. Instead:
 3. **Maths → plain text, exactly.** Render maths in the schema conventions
    (`^` powers, `*`, `/`, `sqrt()`, `pi`) with values kept exact — don't
    paraphrase or round.
-4. **Figures / diagrams.** The schema is text-only. If a question needs a
-   figure, describe it in words inside `question` so the item stands alone; if
-   it truly can't work without the image, **skip it and list which you skipped**
-   rather than inventing content. (If you need real diagram support, that's an
-   app change — ask the owner.)
+4. **Figures / diagrams.** A question can carry a figure in the `image` field
+   (see schema). Prefer **redrawing the figure as inline SVG** — read the source
+   figure and reproduce it as a clean `<svg>` (crisp, a few KB, renders safely).
+   For an intricate figure that's impractical to redraw, embed a cropped raster
+   as a `data:` URI (PNG/JPEG, ≤500 KB) or use an https URL. Always set
+   `imageAlt`. Only describe-in-words as a last resort when no figure can be
+   produced.
 
 **Fallback (huge files or a runtime without file reading):** convert to Markdown
 first with a structure-preserving extractor, then transcribe from the Markdown —
@@ -167,6 +169,8 @@ A question object (a batch is an array of these):
 | `options` | **4–8** strings (ESAT varies the count; 5 is a fine default) |
 | `correctIndex` | zero-based index of the correct option (0 to `options.length - 1`) |
 | `explanation` | justifies the answer with the key working |
+| `image` | *(optional)* figure: inline SVG markup, a `data:` URI, or an https URL; ≤500 KB; rendered inside an `<img>` (SVG scripts are neutralized) |
+| `imageAlt` | *(optional)* short text description of the figure |
 
 `id`, `source`, and `createdAt` are assigned by the server — **do not set them
 when adding** (but you DO need an `id` to update or delete a specific question —
@@ -197,8 +201,9 @@ Use these exact topic strings so the app's filters and quiz selection line up.
    style; in **Exact** mode transcribe the supplied source faithfully (and still
    verify the answer key — rule 1 applies in every mode).
 5. Vary topic/difficulty across a batch unless a specific slice is requested.
-6. Since diagrams can't be embedded, describe any needed setup in words (or avoid
-   diagram-dependent items).
+6. For diagram-based questions, attach a figure via `image` (prefer inline SVG;
+   see the "Figures / diagrams" note above). Describe the setup in words only if
+   no figure can be produced.
 
 ## Commands (manage.mjs)
 
