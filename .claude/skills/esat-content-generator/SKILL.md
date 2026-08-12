@@ -20,9 +20,10 @@ This skill is the single tool for all ESAT question content. It:
 2. **Manages** the live bank through the app's authenticated API — add, update,
    and delete, one item or in bulk.
 
-Content lives only on the server and is changed only through these API endpoints
-(the in-app dashboard uses the same ones). There is no commit-a-file path and no
-redeploy.
+Content lives only on the server and is changed only through these API endpoints.
+The in-app dashboard uses the same endpoints and can also add, edit, and delete
+questions (including figures) manually — this skill and the dashboard are two
+front-ends to the one bank. There is no commit-a-file path and no redeploy.
 
 ## Scope: three modules only
 
