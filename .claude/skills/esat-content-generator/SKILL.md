@@ -51,13 +51,15 @@ generate or push anything until you have asked which mode they want**:
 
 Ask this even when the request seems obvious, and wait for the answer before
 formatting or calling `add`. If the user has already stated the mode in their
-message, honour it without re-asking.
+message, honour it without re-asking. **Exact** is the common case for this
+tool — transcribe cleanly and completely; do not paraphrase or "improve" the
+wording in Exact mode.
 
-> This is a **private, personal practice** tool. Note that the platform's quiz
-> is currently reachable at its public URL, so anything pushed can be seen by
-> visitors. Keep **Exact** transcriptions of third-party/copyrighted papers for
-> a build where the quiz is access-controlled; use **Similar**/**New** for
-> anything served publicly.
+> This is a **private, single-user practice** tool. The entire app — quiz
+> included — is login-gated (see `middleware.ts`): content is visible only to
+> the signed-in owner and is never publicly served. Transcribe material you
+> have legitimate access to — your own notes, or your institute's / subscribed
+> materials — and keep it within this private tool (don't redistribute it).
 
 ## What the real ESAT is (author to this)
 
