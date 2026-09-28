@@ -1,5 +1,7 @@
 # 💫 About Me
 
+I build under the name **Kamran Code** — [kamrancode.com](https://www.kamrancode.com): AI-powered applications, full-stack platforms and business systems (CRM, CMS, ERP), from Rewa, Madhya Pradesh, India. Case studies, articles and a booking link are on the site.
+
 I'm a **Software Engineer at XLEducation (UK)**, working mainly on **AI application development** — building intelligent, production-ready products across web and mobile with a range of tech stacks.
 
 I work across the full stack and specialize in integrating **AI into real-world applications** — LLM-powered features, retrieval-augmented generation, agent workflows, and data-driven platforms — backed by solid backend engineering.
