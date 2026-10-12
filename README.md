@@ -62,3 +62,13 @@ AI Agents • Advanced RAG Architectures • Scalable AI Systems • Applied LLM
 # 🤝 Open to
 
 AI product development • Innovative collaborations • Impact-driven projects
+
+---
+
+# 🔗 Connect
+
+- 🌐 Website: [kamrancode.com](https://www.kamrancode.com)
+- 💼 LinkedIn: [kamrancode](https://www.linkedin.com/in/kamrancode)
+- 𝕏 X: [@kamrancode](https://x.com/kamrancode)
+- ▶️ YouTube: [@Kamran-code](https://www.youtube.com/@Kamran-code)
+- 📸 Instagram: [@kamrancode](https://www.instagram.com/kamrancode/)
